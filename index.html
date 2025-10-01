@@ -15,44 +15,9 @@
             max-width: 1600px;
             margin: 0 auto;
         }
-        .chart-wrapper {
-            display: grid;
-            grid-template-columns: auto 1fr auto; /* Labels | Chart | Labels */
-            align-items: center;
-            gap: 5px;
-            padding: 10px;
-        }
-        .main-label-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-        .main-label {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #555;
-            padding: 10px 5px;
-            background-color: #f0f0f0;
-            border-radius: 8px;
-            height: fit-content;
-        }
-        .flow-label {
-            position: absolute;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #333;
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 2px 4px;
-            border-radius: 4px;
-            pointer-events: none;
-            white-space: nowrap;
-        }
         .chart-container-relative {
             position: relative;
+            padding-top: 40px; /* Make space for top labels */
         }
         .controls {
             display: flex;
@@ -74,55 +39,64 @@
         .controls button.active, .controls button:hover {
             background-color: #007bff;
         }
+        .chart-subtitle {
+            position: absolute;
+            top: 0;
+            font-weight: bold;
+            font-size: 1.2rem; /* Increased font size */
+            color: #333;
+        }
+        .top-left { left: 15px; }
+        .top-right { right: 15px; }
+        .chart-title {
+            font-size: 1.75rem; /* Increased font size */
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .main-title {
+            font-size: 2.5rem; /* Increased font size */
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
-        <header class="text-center mb-12">
-            <h1 class="text-3xl md:text-4xl font-bold mb-2">4ITLR New Nodule Cohort Progression Analysis</h1>
+        <header>
+            <h1 class="main-title">4ITLR New Nodule Cohort Progression Analysis</h1>
         </header>
 
         <main class="space-y-16">
             <!-- Annual New Nodules Chart -->
             <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-semibold text-center mb-6">Annual New Nodules</h2>
+                <h2 class="chart-title">Annual New Nodules (n=319)</h2>
                 <div id="controls_annual" class="controls">
                     <button data-sort="risk_high_low">Sort by Risk (High to Low)</button>
                     <button data-sort="risk_low_high" class="active">Sort by Risk (Low to High)</button>
                     <button data-sort="auto">Automatic Layout</button>
                 </div>
-                <div class="chart-wrapper">
-                    <div class="main-label-container">
-                         <div class="main-label">Initial Classification</div>
-                    </div>
-                    <div id="sankey_annual_container" class="chart-container-relative">
-                        <div id="sankey_annual" style="height: 500px;"></div>
-                    </div>
-                     <div class="main-label-container">
-                         <div class="main-label">Follow-up Status</div>
-                    </div>
+                <div id="sankey_annual_container" class="chart-container-relative">
+                    <div class="chart-subtitle top-left">Annual results</div>
+                    <div id="sankey_annual" style="height: 500px;"></div>
+                    <div class="chart-subtitle top-right">Follow-up status</div>
                 </div>
             </div>
 
             <!-- Baseline Repeat New Nodules Chart -->
             <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
-                <h2 class="text-2xl font-semibold text-center mb-6">Baseline Repeat New Nodules</h2>
+                <h2 class="chart-title">Baseline Repeat New Nodules (n=200)</h2>
                  <div id="controls_baseline" class="controls">
                     <button data-sort="risk_high_low">Sort by Risk (High to Low)</button>
                     <button data-sort="risk_low_high" class="active">Sort by Risk (Low to High)</button>
                     <button data-sort="auto">Automatic Layout</button>
                 </div>
-                <div class="chart-wrapper">
-                    <div class="main-label-container">
-                         <div class="main-label">Initial Classification</div>
-                    </div>
-                     <div id="sankey_baseline_container" class="chart-container-relative">
-                        <div id="sankey_baseline" style="height: 500px;"></div>
-                    </div>
-                     <div class="main-label-container">
-                         <div class="main-label">Follow-up Status</div>
-                    </div>
+                <div id="sankey_baseline_container" class="chart-container-relative">
+                    <div class="chart-subtitle top-left">Baseline results</div>
+                    <div id="sankey_baseline" style="height: 500px;"></div>
+                    <div class="chart-subtitle top-right">Follow-up status</div>
                 </div>
             </div>
         </main>
@@ -135,38 +109,15 @@
         let annualChartData, baselineChartData;
 
         function initialize() {
-            // Prepare data sets once
             annualChartData = prepareChartData(
-                [
-                    ['Positive', 'No Follow-up', 19],
-                    ['Indeterminate', 'Positive', 16],
-                    ['Indeterminate', 'Indeterminate', 23],
-                    ['Indeterminate', 'Negative', 157],
-                    ['Indeterminate', 'No Follow-up', 72],
-                    ['Negative', 'Negative', 9],
-                    ['Negative', 'No Follow-up', 23]
-                ], 319, { 'Positive': 19, 'Indeterminate': 268, 'Negative': 32 }, { 'Positive': 16, 'Indeterminate': 23, 'Negative': 166, 'No Follow-up': 114 }
+                [['Positive', 'No Follow-up', 19], ['Indeterminate', 'Positive', 16], ['Indeterminate', 'Indeterminate', 23], ['Indeterminate', 'Negative', 157], ['Indeterminate', 'No Follow-up', 72], ['Negative', 'Negative', 9], ['Negative', 'No Follow-up', 23]],
+                319, { 'Positive': 19, 'Indeterminate': 268, 'Negative': 32 }, { 'Positive': 16, 'Indeterminate': 23, 'Negative': 166, 'No Follow-up': 114 }
             );
-
             baselineChartData = prepareChartData(
-                [
-                    ['Positive', 'Negative', 1],
-                    ['Positive', 'No Follow-up', 20],
-                    ['Indeterminate', 'Positive', 12],
-                    ['Indeterminate', 'Indeterminate', 9],
-                    ['Indeterminate', 'Negative', 63],
-                    ['Indeterminate', 'No Follow-up', 11],
-                    ['Negative', 'Positive', 3],
-                    ['Negative', 'Indeterminate', 11],
-                    ['Negative', 'Negative', 40],
-                    ['Negative', 'No Follow-up', 30]
-                ], 200, { 'Positive': 21, 'Indeterminate': 95, 'Negative': 84 }, { 'Positive': 15, 'Indeterminate': 20, 'Negative': 104, 'No Follow-up': 61 }
+                [['Positive', 'Negative', 1], ['Positive', 'No Follow-up', 20], ['Indeterminate', 'Positive', 12], ['Indeterminate', 'Indeterminate', 9], ['Indeterminate', 'Negative', 63], ['Indeterminate', 'No Follow-up', 11], ['Negative', 'Positive', 3], ['Negative', 'Indeterminate', 11], ['Negative', 'Negative', 40], ['Negative', 'No Follow-up', 30]],
+                200, { 'Positive': 21, 'Indeterminate': 95, 'Negative': 84 }, { 'Positive': 15, 'Indeterminate': 20, 'Negative': 104, 'No Follow-up': 61 }
             );
-            
-            // Initial draw
             drawCharts();
-
-            // Setup event listeners
             setupControls('annual', drawAnnualChart);
             setupControls('baseline', drawBaselineRepeatChart);
         }
@@ -187,57 +138,53 @@
             drawBaselineRepeatChart();
         }
 
-        const colorPalette = {
-            positive: '#d9534f',
-            indeterminate: '#f0ad4e',
-            negative: '#5cb85c',
-            noFu: '#777777'
-        };
+        const colorPalette = { positive: '#d9534f', indeterminate: '#f0ad4e', negative: '#5cb85c', noFu: '#777777' };
 
         function prepareChartData(dataRowsRaw, total, initialTotals, fuTotals) {
              return { raw: dataRowsRaw, total, initialTotals, fuTotals };
         }
 
         function getSortOrder(sortType) {
-            if (sortType === 'risk_high_low') {
-                return ['Positive', 'Indeterminate', 'Negative', 'No Follow-up'];
-            }
-            // risk_low_high
+            if (sortType === 'risk_high_low') return ['Positive', 'Indeterminate', 'Negative', 'No Follow-up'];
             return ['Negative', 'Indeterminate', 'Positive', 'No Follow-up'];
         }
 
         function drawSankeyChart(containerId, chartData, sortType) {
             const { raw: dataRowsRaw, total, initialTotals, fuTotals } = chartData;
 
-            const baseSourceOrder = getSortOrder(sortType).filter(name => name !== 'No Follow-up');
-            const baseTargetOrder = getSortOrder(sortType);
+            const baseSourceOrder = getSortOrder(sortType).filter(name => initialTotals[name] !== undefined);
+            const baseTargetOrder = getSortOrder(sortType).filter(name => fuTotals[name] !== undefined);
 
             const sourceLabels = baseSourceOrder.reduce((acc, name) => {
-                acc[name] = `${name} (n=${initialTotals[name]}, ${Math.round(initialTotals[name]/total*100)}%)`;
+                acc[name] = `${name}\n(n=${initialTotals[name]}, ${Math.round(initialTotals[name]/total*100)}%)`;
                 return acc;
             }, {});
-
             const targetLabels = baseTargetOrder.reduce((acc, name) => {
-                const key = name;
-                acc[key] = `${name} (n=${fuTotals[name]}, ${Math.round(fuTotals[name]/total*100)}%)`;
+                acc[name] = `${name}\n(n=${fuTotals[name]}, ${Math.round(fuTotals[name]/total*100)}%)`;
                 return acc;
             }, {});
             
-            let labeledDataRows = dataRowsRaw.map(row => [
-                sourceLabels[row[0]],
-                targetLabels[row[1]],
-                row[2]
-            ]);
+            const sourceTotalsForPercent = {};
+            dataRowsRaw.forEach(row => {
+                const sourceName = row[0];
+                const count = row[2];
+                if (!sourceTotalsForPercent[sourceName]) sourceTotalsForPercent[sourceName] = 0;
+                sourceTotalsForPercent[sourceName] += count;
+            });
 
-            const tooltips = {};
-            Object.entries(sourceLabels).forEach(([key, value]) => tooltips[value] = `Initial Classification: ${key}`);
-            Object.entries(targetLabels).forEach(([key, value]) => tooltips[value] = `Follow-up Status: ${key}`);
+            let labeledDataRows = dataRowsRaw.map(row => {
+                const [sourceName, targetName, count] = row;
+                const sourceTotal = sourceTotalsForPercent[sourceName];
+                const percentage = ((count / sourceTotal) * 100).toFixed(0);
+                const tooltipText = `n=${count}, ${percentage}%`;
+                return [sourceLabels[sourceName], targetLabels[targetName], count, tooltipText];
+            });
 
             const data = new google.visualization.DataTable();
             data.addColumn('string', 'From');
             data.addColumn('string', 'To');
             data.addColumn('number', 'Count');
-            
+            data.addColumn({type: 'string', role: 'tooltip'});
             data.addRows(labeledDataRows);
             
             const discoveredNodes = [];
@@ -249,71 +196,32 @@
 
             const colorMap = {};
             discoveredNodes.forEach(nodeName => {
-                const cleanName = nodeName.split(' ')[0].toLowerCase();
+                const cleanName = nodeName.split('\n')[0].toLowerCase();
                 if (cleanName === 'positive') colorMap[nodeName] = colorPalette.positive;
                 else if (cleanName === 'indeterminate') colorMap[nodeName] = colorPalette.indeterminate;
                 else if (cleanName === 'negative') colorMap[nodeName] = colorPalette.negative;
                 else if (cleanName.startsWith('no')) colorMap[nodeName] = colorPalette.noFu;
             });
             const colors = discoveredNodes.map(node => colorMap[node]);
-            
-            const sourceTotals = {};
-            labeledDataRows.forEach(row => {
-                 if(!sourceTotals[row[0]]) sourceTotals[row[0]] = 0;
-                sourceTotals[row[0]] += row[2];
-            });
-
 
             const options = {
                 height: 500,
+                tooltip: { isHtml: false, textStyle: { fontName: 'Arial', fontSize: 16 } }, // Increased font size
                 sankey: {
                     node: {
-                        label: { fontName: 'Arial', fontSize: 14, color: '#333333', bold: true },
-                        labelPadding: 30,
+                        label: { fontName: 'Arial', fontSize: 16, color: '#333333', bold: true }, // Increased font size
+                        labelPadding: 10,
                         nodePadding: 20,
                         width: 30,
                         colors: colors,
                     },
-                    link: {
-                        colorMode: 'gradient',
-                        colors: colors
-                    },
+                    link: { colorMode: 'gradient', colors: colors },
                     iterations: sortType === 'auto' ? 32 : 0
                 }
             };
 
             const chart = new google.visualization.Sankey(document.getElementById(containerId));
-            google.visualization.events.addListener(chart, 'ready', () => setTimeout(() => addFlowLabels(containerId, chart, data, sourceTotals), 100));
             chart.draw(data, options);
-        }
-        
-        function addFlowLabels(containerId, chart, data, sourceTotals) {
-            if (typeof chart.getLayout !== 'function') return;
-            const chartLayout = chart.getLayout();
-            const container = document.getElementById(containerId + "_container");
-            if (!container || !chartLayout) return;
-
-            container.querySelectorAll('.flow-label').forEach(el => el.remove());
-
-            for (let i = 0; i < data.getNumberOfRows(); i++) {
-                const sourceNodeName = data.getValue(i, 0);
-                const value = data.getValue(i, 2);
-                if (value === 0) continue;
-                const sourceTotal = sourceTotals[sourceNodeName];
-                const percentage = ((value / sourceTotal) * 100).toFixed(0);
-                const linkLayout = chartLayout.links[i];
-                if (!linkLayout) continue;
-                
-                const yPos = linkLayout.y1 + (linkLayout.ys[1] - linkLayout.y1) / 2;
-                const xPos = chartLayout.nodes[linkLayout.source].x + chartLayout.nodes[linkLayout.source].width + 10;
-                
-                const label = document.createElement('div');
-                label.className = 'flow-label';
-                label.innerHTML = `n=${value}, ${percentage}%`;
-                label.style.top = `${yPos}px`;
-                label.style.left = `${xPos}px`;
-                container.appendChild(label);
-            }
         }
 
         function drawAnnualChart() {
