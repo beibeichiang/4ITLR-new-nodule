@@ -12,53 +12,39 @@
             color: #333333;
         }
         .container {
-            max-width: 1024px; /* Further reduced to increase side padding */
+            max-width: 1280px; 
             margin: 0 auto;
         }
         .chart-container-relative {
             position: relative;
-            padding-top: 40px; /* Make space for top labels */
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .controls button {
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #555;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .controls button.active, .controls button:hover {
-            background-color: #007bff;
+            padding-top: 40px; 
         }
         .chart-subtitle {
             position: absolute;
             top: 0;
             font-weight: bold;
-            font-size: 1.2rem; /* Increased font size */
+            font-size: 1.2rem;
             color: #333;
         }
         .top-left { left: 15px; }
         .top-right { right: 15px; }
         .chart-title {
-            font-size: 1.75rem; /* Increased font size */
+            font-size: 1.75rem;
             font-weight: 600;
             text-align: center;
             margin-bottom: 1.5rem;
         }
         .main-title {
-            font-size: 2.5rem; /* Increased font size */
+            font-size: 2.5rem;
             font-weight: bold;
             text-align: center;
             margin-bottom: 3rem;
+        }
+        .footnote {
+            text-align: center;
+            margin-top: 1rem;
+            font-style: italic;
+            color: #666;
         }
     </style>
 </head>
@@ -73,31 +59,27 @@
             <!-- Annual New Nodules Chart -->
             <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
                 <h2 class="chart-title">Annual New Nodules (n=319)</h2>
-                <div id="controls_annual" class="controls">
-                    <button data-sort="risk_high_low">Sort by Risk (High to Low)</button>
-                    <button data-sort="risk_low_high" class="active">Sort by Risk (Low to High)</button>
-                    <button data-sort="auto">Automatic Layout</button>
-                </div>
                 <div id="sankey_annual_container" class="chart-container-relative">
                     <div class="chart-subtitle top-left">Annual results</div>
-                    <div id="sankey_annual" style="height: 500px;"></div>
-                    <div class="chart-subtitle top-right">Follow-up status</div>
+                    <div id="sankey_annual" style="height: 600px;"></div>
+                    <div class="chart-subtitle top-right">Final Follow-up status</div>
                 </div>
+                <p class="footnote">
+                    *Note: For cases that remained 'Indeterminate' after the first follow-up, this diagram shows their final status after the second follow-up.
+                </p>
             </div>
 
             <!-- Baseline Repeat New Nodules Chart -->
             <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
                 <h2 class="chart-title">Baseline Repeat New Nodules (n=200)</h2>
-                 <div id="controls_baseline" class="controls">
-                    <button data-sort="risk_high_low">Sort by Risk (High to Low)</button>
-                    <button data-sort="risk_low_high" class="active">Sort by Risk (Low to High)</button>
-                    <button data-sort="auto">Automatic Layout</button>
-                </div>
                 <div id="sankey_baseline_container" class="chart-container-relative">
-                    <div class="chart-subtitle top-left">Baseline results</div>
-                    <div id="sankey_baseline" style="height: 500px;"></div>
-                    <div class="chart-subtitle top-right">Follow-up status</div>
+                    <div class="chart-subtitle top-left">Baseline repeat results</div>
+                    <div id="sankey_baseline" style="height: 600px;"></div>
+                    <div class="chart-subtitle top-right">Final Follow-up status</div>
                 </div>
+                 <p class="footnote">
+                    *Note: For cases that remained 'Indeterminate' after the first follow-up, this diagram shows their final status after the second follow-up.
+                </p>
             </div>
         </main>
     </div>
@@ -106,87 +88,72 @@
         google.charts.load('current', { 'packages': ['sankey'] });
         google.charts.setOnLoadCallback(initialize);
 
-        let annualChartData, baselineChartData;
-
         function initialize() {
-            annualChartData = prepareChartData(
-                [['Positive', 'No Follow-up', 19], ['Indeterminate', 'Positive', 16], ['Indeterminate', 'Indeterminate', 23], ['Indeterminate', 'Negative', 157], ['Indeterminate', 'No Follow-up', 72], ['Negative', 'Negative', 9], ['Negative', 'No Follow-up', 23]],
-                319, { 'Positive': 19, 'Indeterminate': 268, 'Negative': 32 }, { 'Positive': 16, 'Indeterminate': 23, 'Negative': 166, 'No Follow-up': 114 }
-            );
-            baselineChartData = prepareChartData(
-                [['Positive', 'Negative', 1], ['Positive', 'No Follow-up', 20], ['Indeterminate', 'Positive', 12], ['Indeterminate', 'Indeterminate', 9], ['Indeterminate', 'Negative', 63], ['Indeterminate', 'No Follow-up', 11], ['Negative', 'Positive', 3], ['Negative', 'Indeterminate', 11], ['Negative', 'Negative', 40], ['Negative', 'No Follow-up', 30]],
-                200, { 'Positive': 21, 'Indeterminate': 95, 'Negative': 84 }, { 'Positive': 15, 'Indeterminate': 20, 'Negative': 104, 'No Follow-up': 61 }
-            );
-            drawCharts();
-            setupControls('annual', drawAnnualChart);
-            setupControls('baseline', drawBaselineRepeatChart);
-        }
-
-        function setupControls(chartName, drawFunction) {
-            const controls = document.getElementById(`controls_${chartName}`);
-            controls.addEventListener('click', function(event) {
-                if (event.target.tagName === 'BUTTON') {
-                    controls.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                    event.target.classList.add('active');
-                    drawFunction();
-                }
-            });
-        }
-
-        function drawCharts() {
             drawAnnualChart();
             drawBaselineRepeatChart();
         }
 
         const colorPalette = { positive: '#d9534f', indeterminate: '#f0ad4e', negative: '#5cb85c', noFu: '#777777' };
 
-        function prepareChartData(dataRowsRaw, total, initialTotals, fuTotals) {
-             return { raw: dataRowsRaw, total, initialTotals, fuTotals };
-        }
-
-        function getSortOrder(sortType) {
-            if (sortType === 'risk_high_low') return ['Positive', 'Indeterminate', 'Negative', 'No Follow-up'];
-            return ['Negative', 'Indeterminate', 'Positive', 'No Follow-up'];
-        }
-
-        function drawSankeyChart(containerId, chartData, sortType) {
-            const { raw: dataRowsRaw, total, initialTotals, fuTotals } = chartData;
-
-            const baseSourceOrder = getSortOrder(sortType).filter(name => initialTotals[name] !== undefined);
-            const baseTargetOrder = getSortOrder(sortType).filter(name => fuTotals[name] !== undefined);
-
-            const sourceLabels = baseSourceOrder.reduce((acc, name) => {
-                acc[name] = `${name}\n(n=${initialTotals[name]}, ${Math.round(initialTotals[name]/total*100)}%)`;
-                return acc;
-            }, {});
-            const targetLabels = baseTargetOrder.reduce((acc, name) => {
-                acc[name] = `${name}\n(n=${fuTotals[name]}, ${Math.round(fuTotals[name]/total*100)}%)`;
-                return acc;
-            }, {});
-            
-            const sourceTotalsForPercent = {};
-            dataRowsRaw.forEach(row => {
-                const sourceName = row[0];
-                const count = row[2];
-                if (!sourceTotalsForPercent[sourceName]) sourceTotalsForPercent[sourceName] = 0;
-                sourceTotalsForPercent[sourceName] += count;
-            });
-
-            let labeledDataRows = dataRowsRaw.map(row => {
-                const [sourceName, targetName, count] = row;
-                const sourceTotal = sourceTotalsForPercent[sourceName];
-                const percentage = ((count / sourceTotal) * 100).toFixed(0);
-                const tooltipText = `n=${count}, ${percentage}%`;
-                return [sourceLabels[sourceName], targetLabels[targetName], count, tooltipText];
-            });
+        function drawSankeyChart(containerId, chartData) {
+            const { total, initialTotals, finalTotals, dataRows, initialOrder, finalOrder } = chartData;
 
             const data = new google.visualization.DataTable();
             data.addColumn('string', 'From');
             data.addColumn('string', 'To');
             data.addColumn('number', 'Count');
             data.addColumn({type: 'string', role: 'tooltip'});
-            data.addRows(labeledDataRows);
+
+            const nodes = {
+                initial: {
+                    Negative: `Negative\n(n=${initialTotals.neg}, ${Math.round(initialTotals.neg/total*100)}%)`,
+                    Indeterminate: `Indeterminate\n(n=${initialTotals.ind}, ${Math.round(initialTotals.ind/total*100)}%)`,
+                    Positive: `Positive\n(n=${initialTotals.pos}, ${Math.round(initialTotals.pos/total*100)}%)`
+                },
+                final: {
+                    Negative: `Negative\n(n=${finalTotals.neg}, ${Math.round(finalTotals.neg/total*100)}%)`,
+                    Positive: `Positive\n(n=${finalTotals.pos}, ${Math.round(finalTotals.pos/total*100)}%)`,
+                    "No follow-up yet": `No follow-up yet\n(n=${finalTotals.noFu}, ${Math.round(finalTotals.noFu/total*100)}%)`
+                }
+            };
             
+            const sourceTotalsForPercent = {
+                [nodes.initial.Negative]: initialTotals.neg,
+                [nodes.initial.Indeterminate]: initialTotals.ind,
+                [nodes.initial.Positive]: initialTotals.pos
+            };
+
+            let labeledDataRows = dataRows.map(row => {
+                const [fromKey, toKey, count] = row;
+                const fromNode = nodes.initial[fromKey];
+                const toNode = nodes.final[toKey];
+                const sourceTotal = sourceTotalsForPercent[fromNode];
+                const percentage = sourceTotal > 0 ? ((count / sourceTotal) * 100).toFixed(0) : 0;
+                const tooltipText = `n=${count}, ${percentage}%`;
+                return [fromNode, toNode, count, tooltipText];
+            });
+
+            // Enforce strict sorting
+            labeledDataRows.sort((a,b) => {
+                const fromNodeA = a[0];
+                const fromNodeB = b[0];
+                const toNodeA = a[1];
+                const toNodeB = b[1];
+
+                const fromOrder = initialOrder.map(key => nodes.initial[key]);
+                const toOrder = finalOrder.map(key => nodes.final[key]);
+
+                const fromIndexA = fromOrder.indexOf(fromNodeA);
+                const fromIndexB = fromOrder.indexOf(fromNodeB);
+                if(fromIndexA !== fromIndexB) return fromIndexA - fromIndexB;
+
+                const toIndexA = toOrder.indexOf(toNodeA);
+                const toIndexB = toOrder.indexOf(toNodeB);
+                return toIndexA - toIndexB;
+            });
+
+            data.addRows(labeledDataRows);
+
             const discoveredNodes = [];
             const seenNodes = new Set();
             labeledDataRows.forEach(row => {
@@ -197,41 +164,70 @@
             const colorMap = {};
             discoveredNodes.forEach(nodeName => {
                 const cleanName = nodeName.split('\n')[0].toLowerCase();
-                if (cleanName === 'positive') colorMap[nodeName] = colorPalette.positive;
-                else if (cleanName === 'indeterminate') colorMap[nodeName] = colorPalette.indeterminate;
-                else if (cleanName === 'negative') colorMap[nodeName] = colorPalette.negative;
-                else if (cleanName.startsWith('no')) colorMap[nodeName] = colorPalette.noFu;
+                if (cleanName.includes('positive')) colorMap[nodeName] = colorPalette.positive;
+                else if (cleanName.includes('indeterminate')) colorMap[nodeName] = colorPalette.indeterminate;
+                else if (cleanName.includes('negative')) colorMap[nodeName] = colorPalette.negative;
+                else if (cleanName.includes('no')) colorMap[nodeName] = colorPalette.noFu;
             });
             const colors = discoveredNodes.map(node => colorMap[node]);
 
             const options = {
-                height: 500,
-                tooltip: { isHtml: false, textStyle: { fontName: 'Arial', fontSize: 16 } }, // Increased font size
+                height: 600,
+                tooltip: { isHtml: false, textStyle: { fontName: 'Arial', fontSize: 16 } },
                 sankey: {
                     node: {
-                        label: { fontName: 'Arial', fontSize: 16, color: '#333333', bold: true }, // Increased font size
+                        label: { fontName: 'Arial', fontSize: 16, color: '#333333', bold: true },
                         labelPadding: 10,
-                        nodePadding: 20,
+                        nodePadding: 15,
                         width: 30,
                         colors: colors,
                     },
                     link: { colorMode: 'gradient', colors: colors },
-                    iterations: sortType === 'auto' ? 32 : 0
+                    iterations: 0
                 }
             };
-
             const chart = new google.visualization.Sankey(document.getElementById(containerId));
             chart.draw(data, options);
         }
 
         function drawAnnualChart() {
-            const sortType = document.querySelector('#controls_annual .active').dataset.sort;
-            drawSankeyChart('sankey_annual', annualChartData, sortType);
+            const total = 319;
+            const initialTotals = { neg: 32, ind: 268, pos: 19 };
+            const finalTotals = { neg: 176, pos: 39, noFu: 104 };
+            const initialOrder = ['Negative', 'Indeterminate', 'Positive'];
+            const finalOrder = ['Negative', 'No follow-up yet', 'Positive'];
+            
+            const dataRows = [
+                ['Negative', 'Negative', 9],
+                ['Negative', 'No follow-up yet', 23],
+                ['Indeterminate', 'Negative', 167],
+                ['Indeterminate', 'Positive', 20],
+                ['Indeterminate', 'No follow-up yet', 81],
+                ['Positive', 'Positive', 19]
+            ];
+            
+            drawSankeyChart('sankey_annual', { total, initialTotals, finalTotals, dataRows, initialOrder, finalOrder });
         }
 
         function drawBaselineRepeatChart() {
-            const sortType = document.querySelector('#controls_baseline .active').dataset.sort;
-            drawSankeyChart('sankey_baseline', baselineChartData, sortType);
+             const total = 200;
+            const initialTotals = { neg: 84, ind: 95, pos: 21 };
+            const finalTotals = { neg: 117, pos: 36, noFu: 47 };
+            const initialOrder = ['Negative', 'Indeterminate', 'Positive'];
+            const finalOrder = ['Negative', 'No follow-up yet', 'Positive'];
+            
+            const dataRows = [
+                ['Negative', 'Negative', 46],
+                ['Negative', 'Positive', 3],
+                ['Negative', 'No follow-up yet', 35],
+                ['Indeterminate', 'Negative', 70],
+                ['Indeterminate', 'Positive', 13],
+                ['Indeterminate', 'No follow-up yet', 12],
+                ['Positive', 'Negative', 1],
+                ['Positive', 'Positive', 20]
+            ];
+            
+            drawSankeyChart('sankey_baseline', { total, initialTotals, finalTotals, dataRows, initialOrder, finalOrder });
         }
     </script>
 
